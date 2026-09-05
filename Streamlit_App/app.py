@@ -1,125 +1,165 @@
-
+```python
 import streamlit as st
 import joblib
 import numpy as np
 from pathlib import Path
 
-# -----------------------------
-# Page Configuration
-# -----------------------------
+# ============================================================
+# PAGE CONFIGURATION
+# ============================================================
+
 st.set_page_config(
     page_title="Loan Approval Prediction System",
     page_icon="🏦",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# -----------------------------
-# Load Model
-# -----------------------------
-# Get the project root directory
-BASE_DIR = Path(__file__).resolve().parent.parent
+# ============================================================
+# LOAD MACHINE LEARNING MODEL
+# ============================================================
 
-# Model path:
-# Project/
+# Project structure:
+#
+# Loan-Approval-Prediction/
+# │
 # ├── Model/
 # │   └── loan_model.pkl
+# │
 # └── Streamlit_App/
-#     └── app.py
+#     ├── app.py
+#     └── requirements.txt
 
+BASE_DIR = Path(__file__).resolve().parent.parent
 MODEL_PATH = BASE_DIR / "Model" / "loan_model.pkl"
 
-# Check whether model exists
 if not MODEL_PATH.exists():
-    st.error(f"❌ Model file not found: {MODEL_PATH}")
+    st.error("❌ Loan prediction model file was not found.")
+    st.info(
+        "Please make sure 'loan_model.pkl' exists inside the "
+        "'Model' folder in your GitHub repository."
+    )
     st.stop()
 
-# Load model
-model = joblib.load(MODEL_PATH)
+try:
+    model = joblib.load(MODEL_PATH)
+except Exception as e:
+    st.error("❌ Error while loading the machine learning model.")
+    st.exception(e)
+    st.stop()
 
-# -----------------------------
-# Custom CSS
-# -----------------------------
+# ============================================================
+# CUSTOM CSS
+# ============================================================
+
 st.markdown(
     """
     <style>
+
     .main-title {
         text-align: center;
         color: #0E76A8;
+        font-size: 42px;
+        font-weight: 700;
+        margin-bottom: 5px;
     }
 
-    .result-box {
-        padding: 15px;
-        border-radius: 10px;
+    .subtitle {
         text-align: center;
-        font-size: 22px;
-        font-weight: bold;
+        color: #555555;
+        font-size: 20px;
+        margin-bottom: 20px;
     }
+
+    .section-title {
+        font-size: 25px;
+        font-weight: 600;
+        color: #0E76A8;
+    }
+
+    .footer {
+        text-align: center;
+        padding: 20px;
+        color: #666666;
+    }
+
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# -----------------------------
-# Header
-# -----------------------------
+# ============================================================
+# HEADER
+# ============================================================
+
 st.markdown(
-    "<h1 class='main-title'>🏦 Loan Approval Prediction System</h1>",
+    "<div class='main-title'>🏦 Loan Approval Prediction System</div>",
     unsafe_allow_html=True
 )
 
 st.markdown(
-    "<h4 style='text-align:center;'>AI Powered Banking Loan Prediction</h4>",
+    "<div class='subtitle'>AI Powered Banking Loan Prediction</div>",
     unsafe_allow_html=True
 )
 
 st.markdown("---")
 
-# -----------------------------
-# Sidebar
-# -----------------------------
+# ============================================================
+# SIDEBAR
+# ============================================================
+
 st.sidebar.title("📌 Project Information")
 
 st.sidebar.info(
     """
-    This project predicts whether a loan
-    application will be approved or rejected
-    using Machine Learning.
+This project predicts whether a loan
+application will be approved or rejected
+using Machine Learning.
 
-    Models Used:
+### Models Used
 
-    ✅ Logistic Regression
-    ✅ Random Forest
-    ✅ Decision Tree
-    """
+✅ Logistic Regression
+
+✅ Random Forest
+
+✅ Decision Tree
+"""
 )
 
 st.sidebar.markdown("---")
 
 st.sidebar.markdown(
     """
-    ### 👨‍💻 Developer Details
+### 👨‍💻 Developer
 
-    This project has been developed by
-    **Anand Shukla**, a passionate Software
-    Engineer and Web Developer.
+**Anand Shukla**
 
-    The project demonstrates technical skills
-    and practical experience in Machine Learning
-    and modern web development.
+Software Engineer & Web Developer
 
-    He is currently pursuing Engineering from
-    AKTU and is also the founder of
-    **Rudra Digital Marketing Company of India**.
+B.Tech Engineering – AKTU
 
-    His main focus is on modern web technologies
-    and full-stack development.
-    """
+AIML Summer Internship 2026
+
+MNNIT Allahabad, Prayagraj
+"""
 )
 
-# -----------------------------
-# Input Section
-# -----------------------------
+# ============================================================
+# INPUT SECTION
+# ============================================================
+
+st.markdown(
+    "<div class='section-title'>📋 Applicant Information</div>",
+    unsafe_allow_html=True
+)
+
+st.write("Enter the applicant's details below to predict the loan status.")
+
 col1, col2 = st.columns(2)
+
+# ============================================================
+# LEFT COLUMN
+# ============================================================
 
 with col1:
 
@@ -153,59 +193,77 @@ with col1:
         ["Rural", "Semiurban", "Urban"]
     )
 
+# ============================================================
+# RIGHT COLUMN
+# ============================================================
+
 with col2:
 
     applicant_income = st.number_input(
         "Applicant Income",
         min_value=0,
-        value=5000
+        value=5000,
+        step=100
     )
 
     coapplicant_income = st.number_input(
         "Coapplicant Income",
         min_value=0,
-        value=1500
+        value=1500,
+        step=100
     )
 
     loan_amount = st.number_input(
         "Loan Amount",
         min_value=0,
-        value=120
+        value=120,
+        step=10
     )
 
     loan_term = st.number_input(
         "Loan Amount Term",
         min_value=0,
-        value=360
+        value=360,
+        step=10
     )
 
     credit_history = st.selectbox(
         "Credit History",
-        [0, 1]
+        [0, 1],
+        format_func=lambda x: "Good (1)" if x == 1 else "Poor (0)"
     )
 
-# -----------------------------
-# Total Income
-# -----------------------------
+# ============================================================
+# TOTAL INCOME
+# ============================================================
+
 total_income = applicant_income + coapplicant_income
 
 st.markdown("---")
 
-# -----------------------------
-# Prediction Button
-# -----------------------------
-if st.button("🔍 Predict Loan Status"):
+st.metric(
+    label="💰 Total Applicant Income",
+    value=f"{total_income:,.0f}"
+)
 
-    # -------------------------
-    # Encoding
-    # -------------------------
+st.markdown("---")
 
+# ============================================================
+# PREDICTION FUNCTION
+# ============================================================
+
+def prepare_features():
+
+    # Gender Encoding
     gender_encoded = 1 if gender == "Male" else 0
 
+    # Married Encoding
     married_encoded = 1 if married == "Yes" else 0
 
+    # Education Encoding
     education_encoded = 0 if education == "Graduate" else 1
 
+    # Self Employed Encoding
     self_employed_encoded = 1 if self_employed == "Yes" else 0
 
     # Dependents Encoding
@@ -226,9 +284,7 @@ if st.button("🔍 Predict Loan Status"):
     else:
         property_area_encoded = 2
 
-    # -------------------------
-    # Feature Array
-    # -------------------------
+    # Create feature array
     features = np.array(
         [
             gender_encoded,
@@ -243,51 +299,93 @@ if st.button("🔍 Predict Loan Status"):
             credit_history,
             property_area_encoded,
             total_income
-        ]
+        ],
+        dtype=float
     ).reshape(1, -1)
 
-    # -------------------------
-    # Prediction
-    # -------------------------
-    prediction = model.predict(features)
+    return features
 
-    st.markdown("---")
 
-    # -------------------------
-    # Result
-    # -------------------------
-    if prediction[0] == 1:
+# ============================================================
+# PREDICTION BUTTON
+# ============================================================
 
-        st.success("✅ Congratulations! Loan Approved")
+if st.button(
+    "🔍 Predict Loan Status",
+    use_container_width=True
+):
 
-        st.balloons()
+    try:
 
-        st.metric(
-            label="Prediction Status",
-            value="Approved"
+        # Prepare input features
+        features = prepare_features()
+
+        # Make prediction
+        prediction = model.predict(features)
+
+        result = prediction[0]
+
+        st.markdown("---")
+
+        # ====================================================
+        # APPROVED
+        # ====================================================
+
+        if result == 1:
+
+            st.success(
+                "✅ Congratulations! Your Loan is Approved."
+            )
+
+            st.balloons()
+
+            st.metric(
+                label="Prediction Status",
+                value="APPROVED"
+            )
+
+        # ====================================================
+        # REJECTED
+        # ====================================================
+
+        else:
+
+            st.error(
+                "❌ Sorry! Your Loan is Rejected."
+            )
+
+            st.metric(
+                label="Prediction Status",
+                value="REJECTED"
+            )
+
+    except Exception as e:
+
+        st.error(
+            "❌ An error occurred while making the prediction."
         )
 
-    else:
+        st.exception(e)
 
-        st.error("❌ Sorry! Loan Rejected")
+# ============================================================
+# FOOTER
+# ============================================================
 
-        st.metric(
-            label="Prediction Status",
-            value="Rejected"
-        )
-
-# -----------------------------
-# Footer
-# -----------------------------
 st.markdown("---")
 
 st.markdown(
     """
-    <center>
-        <h4>Developed by Anand Shukla</h4>
-        <p>AIML Summer Internship 2026</p>
-        <p>MNNIT Allahabad, Prayagraj</p>
-    </center>
+    <div class="footer">
+
+    <h4>Developed by Anand Shukla</h4>
+
+    <p>AIML Summer Internship 2026</p>
+
+    <p>MNNIT Allahabad, Prayagraj</p>
+
+    <p>🏦 Loan Approval Prediction System</p>
+
+    </div>
     """,
     unsafe_allow_html=True
 )
