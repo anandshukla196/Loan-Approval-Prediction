@@ -202,4 +202,3 @@ st.markdown("""
 <p>MNNIT Allahabad, Prayagraj</p>
 </div>
 """, unsafe_allow_html=True)
-```
